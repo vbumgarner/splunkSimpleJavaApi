@@ -29,6 +29,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -45,7 +46,7 @@ public abstract class RestBase {
 		}
 
 		if (!clientMap.containsKey(server)) {
-			HttpClient newClient = new DefaultHttpClient();
+			HttpClient newClient = new DefaultHttpClient(new ThreadSafeClientConnManager());
 
 			// if( trustSelfSigned() ) {
 

@@ -19,7 +19,9 @@ public class SearchRunner extends RestBase {
 	public static final String JOBS_PATH = "/services/search/jobs";
 
 	private URL server;
-	
+
+	private Status status = null;
+
 	public SearchRunner(URL server) {
 		this.server = server;
 	}
@@ -44,11 +46,16 @@ public class SearchRunner extends RestBase {
 		}
 	}
 
-	public Status getStatus(JobId jobId, AuthKey authKey) throws IOException {
+	public Status getStatus(JobId jobId, AuthKey authKey, boolean needFresh) throws IOException {
+		if( status != null && !needFresh ) {
+			return status;
+		}
+
 		try {
 			InputStream results = doGet(server, JOBS_PATH + "/" + jobId,
 					buildAuthHeaders(authKey));
-			return new Status(XMLUtils.buildDocumet(results));
+			status = new Status(XMLUtils.buildDocumet(results));
+			return status;
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);
@@ -62,7 +69,7 @@ public class SearchRunner extends RestBase {
 			InputStream results = doGet(server, JOBS_PATH + "/" + jobId
 					+ "/results?count=" + Integer.toString(count) + "&offset="
 					+ Integer.toString(offset), buildAuthHeaders(authKey));
-			return ResultsBuilder.build(results);
+			return ResultsBuilder.build(results,getStatus(jobId,authKey,false));
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);

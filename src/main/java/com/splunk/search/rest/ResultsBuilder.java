@@ -10,15 +10,16 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import com.splunk.search.Results;
+import com.splunk.search.Status;
 
 public class ResultsBuilder {
 
-	public static Results build(InputStream results) throws XMLStreamException {
+	public static Results build(InputStream results, Status status) throws XMLStreamException {
 		XMLStreamReader reader = XMLUtils.buildXmlReader(results);
 		String[] columns = buildColumns(reader);
 		List<Map<String, String[]>> rows = buildRows(reader);
 
-		return new Results(columns, rows.iterator());
+		return new Results(columns, rows.iterator(), status);
 	}
 
 	private static String[] buildColumns(XMLStreamReader reader)

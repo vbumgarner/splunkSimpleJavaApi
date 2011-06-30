@@ -30,29 +30,14 @@ public class Main {
 		String user = props.getProperty("user");
 		String password = props.getProperty("password");
 
-		Search srch = new Search(server);
-		AuthKey authKey = srch.buildAuthKey(user, password);
+		Results res = Search.run(server, user, password, search);
 
-		JobId jobId = srch.startSearch(search, authKey);
-
-		Status status = srch.getStatus(jobId, authKey);
-		while (status.isDone() == false) {
-			logger.info("Waiting for jobId " + jobId + " to finish. "
-					+ Math.round(status.doneProgress().floatValue() * 100)
-					+ " percent complete. " + status.resultCount()
-					+ " results retrieved so far.");
-			Thread.sleep(2000);
-			status = srch.getStatus(jobId, authKey);
-		}
-
-		Integer resultCount = srch.getStatus(jobId, authKey).resultCount();
+		Integer resultCount = res.getStatus().resultCount();
 		System.out.println(resultCount.toString() + " events found.");
 
 		if (resultCount.intValue() == 0) {
 			return;
 		}
-
-		Results res = srch.retrieveAllRows(jobId, authKey);
 
 		String[] columns = res.getColumns();
 		CSVWriter csv = new CSVWriter(new OutputStreamWriter(System.out));
