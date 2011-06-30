@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVWriter;
-
-import com.splunk.search.rest.Search;
 
 public class Main {
 
@@ -32,9 +31,9 @@ public class Main {
 		String password = props.getProperty("password");
 
 		Search srch = new Search(server);
-		String authKey = srch.buildAuthKey(user, password);
+		AuthKey authKey = srch.buildAuthKey(user, password);
 
-		String jobId = srch.startSearch(search, authKey);
+		JobId jobId = srch.startSearch(search, authKey);
 
 		Status status = srch.getStatus(jobId, authKey);
 		while (status.isDone() == false) {
@@ -48,36 +47,30 @@ public class Main {
 
 		Integer resultCount = srch.getStatus(jobId, authKey).resultCount();
 		System.out.println(resultCount.toString() + " events found.");
-		
-		if( resultCount.intValue() == 0 ) {
+
+		if (resultCount.intValue() == 0) {
 			return;
 		}
 
-		int PAGE_SIZE = 100;
-		int pageNumber = 0;
-		Results res = srch.retrieveRows(jobId, authKey, PAGE_SIZE, pageNumber);
+		Results res = srch.retrieveAllRows(jobId, authKey);
 
 		String[] columns = res.getColumns();
 		CSVWriter csv = new CSVWriter(new OutputStreamWriter(System.out));
 		csv.writeNext(columns);
 		csv.flush();
 
-		while (res.rowCount() > 0) {
-			for (Map<String, String[]> row : res.getRows()) {
-				String[] rowArray = new String[columns.length];
-				for (int i = 0; i < columns.length; i++) {
-					rowArray[i] = org.apache.commons.lang.StringUtils.join(
-							row.get(columns[i]), "|");
-				}
-				csv.writeNext(rowArray);
-				csv.flush();
+		for (Iterator<Map<String, String[]>> iter = res.getRows(); iter
+				.hasNext();) {
+			Map<String, String[]> row = iter.next();
+			String[] rowArray = new String[columns.length];
+			for (int i = 0; i < columns.length; i++) {
+				rowArray[i] = org.apache.commons.lang.StringUtils.join(
+						row.get(columns[i]), "|");
 			}
-
-			pageNumber++;
-			res = srch.retrieveRows(jobId, authKey, PAGE_SIZE, pageNumber
-					* PAGE_SIZE);
+			csv.writeNext(rowArray);
+			csv.flush();
 		}
-		csv.close();
 
+		csv.close();
 	}
 }

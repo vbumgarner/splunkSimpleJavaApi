@@ -32,6 +32,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.splunk.search.AuthKey;
+
 public abstract class RestBase {
 	private static Map<URL, HttpClient> clientMap;
 
@@ -118,7 +120,7 @@ public abstract class RestBase {
 		return entity.getContent();
 	}
 
-	protected Map<String, String> buildAuthHeaders(String authKey) {
+	protected Map<String, String> buildAuthHeaders(AuthKey authKey) {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Authorization", "Splunk " + authKey);
 		return headers;

@@ -18,7 +18,7 @@ public class ResultsBuilder {
 		String[] columns = buildColumns(reader);
 		List<Map<String, String[]>> rows = buildRows(reader);
 
-		return new Results(columns, rows);
+		return new Results(columns, rows.iterator());
 	}
 
 	private static String[] buildColumns(XMLStreamReader reader)
@@ -48,7 +48,6 @@ public class ResultsBuilder {
 			reader.next();
 
 			if (reader.hasName()) {
-				String name = reader.getName().toString();
 				if (reader.isStartElement() && XMLUtils.testNodeName(reader,"result")) {
 					row = new HashMap<String, String[]>();
 

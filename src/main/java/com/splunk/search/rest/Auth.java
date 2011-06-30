@@ -6,10 +6,12 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.splunk.search.AuthKey;
+
 public class Auth extends RestBase {
 	public static final String LOGIN_PATH = "/services/auth/login";
 
-	public static String buildAuthKey(URL server, String user, String password)
+	public static AuthKey buildAuthKey(URL server, String user, String password)
 			throws IOException {
 		Map<String, String> postArgs = new HashMap<String, String>();
 		postArgs.put("username", user);
@@ -19,8 +21,8 @@ public class Auth extends RestBase {
 			InputStream is = doPost(server, LOGIN_PATH,
 					new HashMap<String, String>(), postArgs);
 
-			return XMLUtils.getSingleValueOrMsg(is,
-					"/response/sessionKey/text()");
+			return new AuthKey( XMLUtils.getSingleValueOrMsg(is,
+					"/response/sessionKey/text()") );
 		} catch (Exception e) {
 			IOException ioe = new IOException(e);
 			throw ioe;

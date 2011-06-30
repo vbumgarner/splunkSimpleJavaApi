@@ -1,14 +1,14 @@
 package com.splunk.search;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Results {
 
 	private final String[] columns;
-	private final List<Map<String, String[]>> rows;
+	private final Iterator<Map<String, String[]>> rows;
 
-	public Results(String[] columns, List<Map<String, String[]>> rows) {
+	public Results(String[] columns, Iterator<Map<String, String[]>> rows) {
 		this.columns = columns;
 		this.rows = rows;
 	}
@@ -17,12 +17,8 @@ public class Results {
 		return columns;
 	}
 
-	public List<Map<String, String[]>> getRows() {
+	public Iterator<Map<String, String[]>> getRows() {
 		return rows;
-	}
-
-	public int rowCount() {
-		return rows.size();
 	}
 
 }
