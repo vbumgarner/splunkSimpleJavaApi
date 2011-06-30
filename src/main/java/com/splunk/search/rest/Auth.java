@@ -2,12 +2,10 @@ package com.splunk.search.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class Auth extends RestBase {
@@ -22,10 +20,7 @@ public class Auth extends RestBase {
 			InputStream is = doPost( server , LOGIN_PATH , new HashMap<String,String>() , postArgs );
 			XMLStreamReader r = XMLUtils.buildXmlReader(is);
 			return XMLUtils.retrieveSingleFieldValue(r,"sessionKey");
-		} catch (URISyntaxException e) {
-			IOException ioe = new IOException(e);
-			throw ioe;
-		} catch (XMLStreamException e) {
+		} catch (Exception e) {
 			IOException ioe = new IOException(e);
 			throw ioe;
 		}

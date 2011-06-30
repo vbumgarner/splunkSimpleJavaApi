@@ -5,10 +5,20 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -20,6 +30,11 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeSocketFactory;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -27,21 +42,33 @@ import org.apache.http.message.BasicNameValuePair;
 public abstract class RestBase {
 	private static Map<URL, HttpClient> clientMap;
 
-	public static HttpClient getClient(URL server) {
+	public static HttpClient getClient(URL server)
+			throws KeyManagementException, UnrecoverableKeyException,
+			NoSuchAlgorithmException, KeyStoreException {
 		if (clientMap == null) {
 			clientMap = new HashMap<URL, HttpClient>();
 		}
 
 		if (!clientMap.containsKey(server)) {
 			HttpClient newClient = new DefaultHttpClient();
+
+			// if( trustSelfSigned() ) {
+
+			SchemeSocketFactory socketFactory = new SSLSocketFactory(SelfSignedUtils.NAIVE_TRUST_STRATEGY,SelfSignedUtils.NAIVE_HOSTNAME_VERIFIER);
+			Scheme sch = new Scheme("https", server.getPort(), socketFactory);
+			newClient.getConnectionManager().getSchemeRegistry().register(sch);
+
 			clientMap.put(server, newClient);
 		}
+
+		// }
 
 		return clientMap.get(server);
 	}
 
 	protected static InputStream doGet(URL server, String path,
-			Map<String, String> headers) throws URISyntaxException, ClientProtocolException, IOException {
+			Map<String, String> headers) throws URISyntaxException,
+			ClientProtocolException, IOException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
 		HttpGet httpget = new HttpGet(buildURI(server, path));
 		addHeaders(headers, httpget);
 
@@ -51,7 +78,7 @@ public abstract class RestBase {
 
 	protected static InputStream doPost(URL server, String path,
 			Map<String, String> headers, Map<String, String> postArgs)
-			throws ClientProtocolException, IOException, URISyntaxException {
+			throws ClientProtocolException, IOException, URISyntaxException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
 
 		List<NameValuePair> formparams = new ArrayList<NameValuePair>();
 		for (String k : postArgs.keySet()) {
@@ -100,43 +127,45 @@ public abstract class RestBase {
 		headers.put("Authorization", "Splunk " + authKey);
 		return headers;
 	}
-	
-//	protected void foo() {
-//		TrustManager easyTrustManager = new X509TrustManager() {
-//
-//		    @Override
-//		    public void checkClientTrusted(
-//		            X509Certificate[] chain,
-//		            String authType) throws CertificateException {
-//		        // Oh, I am easy!
-//		    }
-//
-//		    @Override
-//		    public void checkServerTrusted(
-//		            X509Certificate[] chain,
-//		            String authType) throws CertificateException {
-//		        // Oh, I am easy!
-//		    }
-//
-//		    @Override
-//		    public X509Certificate[] getAcceptedIssuers() {
-//		        return null;
-//		    }
-//		    
-//		};
-//
-//		SSLContext sslcontext = SSLContext.getInstance("TLS");
-//		sslcontext.init(null, new TrustManager[] { easyTrustManager }, null);
-//
-//		SSLSocketFactory sf = new SSLSocketFactory(sslcontext);
-//		SSLSocket socket = (SSLSocket) sf.createSocket();
-//		socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5" });
-//
-//		HttpParams params = new BasicHttpParams();
-//		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000L);
-//		InetSocketAddress address = new InetSocketAddress("locahost", 443);
-//		sf.connectSocket(socket, address, null, params);
-//
-//	}
 
+	// protected void foo() {
+	// TrustManager easyTrustManager = new X509TrustManager() {
+	//
+	// @Override
+	// public void checkClientTrusted(
+	// X509Certificate[] chain,
+	// String authType) throws CertificateException {
+	// // Oh, I am easy!
+	// }
+	//
+	// @Override
+	// public void checkServerTrusted(
+	// X509Certificate[] chain,
+	// String authType) throws CertificateException {
+	// // Oh, I am easy!
+	// }
+	//
+	// @Override
+	// public X509Certificate[] getAcceptedIssuers() {
+	// return null;
+	// }
+	//
+	// };
+	//
+	// SSLContext sslcontext = SSLContext.getInstance("TLS");
+	// sslcontext.init(null, new TrustManager[] { easyTrustManager }, null);
+	//
+	// SSLSocketFactory sf = new SSLSocketFactory(sslcontext);
+	// SSLSocket socket = (SSLSocket) sf.createSocket();
+	// socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5"
+	// });
+	//
+	// HttpParams params = new BasicHttpParams();
+	// params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000L);
+	// InetSocketAddress address = new InetSocketAddress("locahost", 443);
+	// sf.connectSocket(socket, address, null, params);
+	//
+	// }
+
+	// public abstract boolean trustSelfSigned();
 }
