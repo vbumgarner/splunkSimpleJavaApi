@@ -1,31 +1,20 @@
 package com.splunk.search;
 
-import java.util.Map;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
 import org.apache.log4j.Logger;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+
+import com.splunk.search.rest.XMLUtils;
 
 public class Status {
 	private static final Logger logger = Logger.getLogger(Status.class);
 
 	private Document document;
-	private XPathFactory factory = XPathFactory.newInstance();
-	private static Map<String, XPathExpression> xpathCache;
 
 	public Status(Document d) {
 		this.document = d;
 	}
 
-
-	//the integers
+	// the integers
 	public Integer diskUsage() {
 		return integerValue(buildKeyPath("diskUsage"));
 	}
@@ -78,8 +67,7 @@ public class Status {
 		return integerValue(buildKeyPath("ttl"));
 	}
 
-
-	//the floats
+	// the floats
 	public Float doneProgress() {
 		return floatValue(buildKeyPath("doneProgress"));
 	}
@@ -88,11 +76,10 @@ public class Status {
 		return floatValue(buildKeyPath("runDuration"));
 	}
 
-	//the strings
+	// the strings
 	public String sid() {
 		return stringValue(buildKeyPath("sid"));
 	}
-
 
 	public String dispatchState() {
 		return stringValue(buildKeyPath("dispatchState"));
@@ -105,8 +92,8 @@ public class Status {
 	public String eventSorting() {
 		return stringValue(buildKeyPath("eventSorting"));
 	}
-	
-	//dates, which we'll just return as strings for now
+
+	// dates, which we'll just return as strings for now
 	public String latestTime() {
 		return stringValue(buildKeyPath("latestTime"));
 	}
@@ -115,7 +102,7 @@ public class Status {
 		return stringValue(buildKeyPath("earliestTime"));
 	}
 
-	//booleans
+	// booleans
 	public Boolean isDone() {
 		return booleanValue(buildKeyPath("isDone"));
 	}
@@ -156,17 +143,14 @@ public class Status {
 		return booleanValue(buildKeyPath("isZombie"));
 	}
 
-
-
-	
-	//xpath stuff...
+	// xpath stuff...
 	private String buildKeyPath(String k) {
-		return "/entry/content/s:dict/s:key[name='" + k + "']/text()";
+		return "/entry/content/dict/key[@name='" + k + "']/text()";
 	}
 
 	private String stringValue(String path) {
 		try {
-			return runXpathToString(path);
+			return XMLUtils.runXpathToString(document, path);
 		} catch (Exception e) {
 			logger.error(e);
 			return null;
@@ -175,11 +159,11 @@ public class Status {
 
 	private Boolean booleanValue(String path) {
 		try {
-			String val = runXpathToString(path);
-			if( val == null || "".equals( val.trim() ) ) {
+			String val = XMLUtils.runXpathToString(document, path);
+			if (val == null || "".equals(val.trim())) {
 				return null;
 			}
-			if( val.trim().equals("1") || val.toLowerCase().equals("true") ) {
+			if (val.trim().equals("1") || val.toLowerCase().equals("true")) {
 				return Boolean.TRUE;
 			} else {
 				return Boolean.FALSE;
@@ -192,7 +176,7 @@ public class Status {
 
 	private Float floatValue(String path) {
 		try {
-			return new Float(runXpathToString(path));
+			return new Float(XMLUtils.runXpathToString(document, path));
 		} catch (Exception e) {
 			logger.error(e);
 			return null;
@@ -201,31 +185,11 @@ public class Status {
 
 	private Integer integerValue(String path) {
 		try {
-			return new Integer(runXpathToString(path));
+			return new Integer(XMLUtils.runXpathToString(document, path));
 		} catch (Exception e) {
 			logger.error(e);
 			return null;
 		}
-	}
-
-	private String runXpathToString(String path) throws DOMException,
-			XPathExpressionException {
-		return runXpath(path).item(1).getNodeValue();
-	}
-
-	private NodeList runXpath(String path) throws XPathExpressionException {
-		return (NodeList) getXpath(path).evaluate(document,
-				XPathConstants.NODESET);
-	}
-
-	private XPathExpression getXpath(String path)
-			throws XPathExpressionException {
-		if (!xpathCache.containsKey(path)) {
-			XPath xpath = factory.newXPath();
-			XPathExpression expr = xpath.compile(path);
-			xpathCache.put(path, expr);
-		}
-		return xpathCache.get(path);
 	}
 
 	/*

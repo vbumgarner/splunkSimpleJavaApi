@@ -40,7 +40,7 @@ public class Search extends RestBase {
 		try {
 			InputStream results = doPost(server, JOBS_PATH,
 					buildAuthHeaders(authKey), postArgs);
-			return XMLUtils.retrieveSingleFieldValue(results, "sid");
+			return XMLUtils.getSingleValueOrMsg(results, "//sid/text()");
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);
@@ -51,7 +51,7 @@ public class Search extends RestBase {
 		try {
 			InputStream results = doGet(server, JOBS_PATH + "/" + jobId,
 					buildAuthHeaders(authKey));
-			return StatusBuilder.build(results);
+			return new Status(XMLUtils.buildDocumet(results));
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);
@@ -61,15 +61,14 @@ public class Search extends RestBase {
 
 	public Results retrieveRows(String jobId, String authKey, int count,
 			int offset) throws IOException {
-		Map<String, String> postArgs = new HashMap<String, String>();
+		//Map<String, String> postArgs = new HashMap<String, String>();
 		// postArgs.put("output_mode","csv");
 		// curl -u admin:changeme -k
 		// https://localhost:8089/services/search/jobs/1309405142.30/results?count=100\&offset=100
 		try {
-			InputStream results = doPost(server, JOBS_PATH + "/" + jobId
+			InputStream results = doGet(server, JOBS_PATH + "/" + jobId
 					+ "/results?count=" + Integer.toString(count) + "&offset="
-					+ Integer.toString(offset), buildAuthHeaders(authKey),
-					postArgs);
+					+ Integer.toString(offset), buildAuthHeaders(authKey));
 			return ResultsBuilder.build(results);
 		} catch (Exception e) {
 			logger.error(e);

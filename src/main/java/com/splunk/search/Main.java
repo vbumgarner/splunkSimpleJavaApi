@@ -46,17 +46,21 @@ public class Main {
 			status = srch.getStatus(jobId, authKey);
 		}
 
-		System.out.println(srch.getStatus(jobId, authKey).resultCount()
-				.toString()
-				+ " events found.");
+		Integer resultCount = srch.getStatus(jobId, authKey).resultCount();
+		System.out.println(resultCount.toString() + " events found.");
+		
+		if( resultCount.intValue() == 0 ) {
+			return;
+		}
 
 		int PAGE_SIZE = 100;
 		int pageNumber = 0;
-		Results res = srch.retrieveRows(search, authKey, PAGE_SIZE, pageNumber);
+		Results res = srch.retrieveRows(jobId, authKey, PAGE_SIZE, pageNumber);
 
 		String[] columns = res.getColumns();
 		CSVWriter csv = new CSVWriter(new OutputStreamWriter(System.out));
 		csv.writeNext(columns);
+		csv.flush();
 
 		while (res.rowCount() > 0) {
 			for (Map<String, String[]> row : res.getRows()) {
@@ -66,12 +70,14 @@ public class Main {
 							row.get(columns[i]), "|");
 				}
 				csv.writeNext(rowArray);
+				csv.flush();
 			}
 
 			pageNumber++;
-			res = srch.retrieveRows(search, authKey, PAGE_SIZE, pageNumber
+			res = srch.retrieveRows(jobId, authKey, PAGE_SIZE, pageNumber
 					* PAGE_SIZE);
 		}
+		csv.close();
 
 	}
 }
