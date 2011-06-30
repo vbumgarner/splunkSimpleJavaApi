@@ -12,11 +12,11 @@ import com.splunk.search.rest.RestBase;
 import com.splunk.search.rest.SearchRunner;
 
 public class Search extends RestBase {
-	private static Logger logger = Logger.getLogger(RestBase.class);
+	static Logger logger = Logger.getLogger(RestBase.class);
 
 	public static final String JOBS_PATH = "/services/search/jobs";
 
-	private static final int DEFAULT_PAGE_SIZE = 100;
+	private static final int DEFAULT_PAGE_SIZE = 500;
 
 	private final URL server;
 	private final SearchRunner runner;
@@ -82,65 +82,11 @@ public class Search extends RestBase {
 
 	public Results retrieveAllRows(JobId jobId, AuthKey authKey) throws IOException {
 		Results firstResults = retrieveRows(jobId, authKey, pageSize, 0);
+		Status status = firstResults.getStatus();
 
-		Status status = getStatus(jobId, authKey);
-		Iterator<Map<String, String[]>> myiter = new ResultsIteratorIterator(jobId,authKey,pageSize,firstResults);
+		Iterator<Map<String, String[]>> myiter = new ResultsIteratorIterator(this, jobId,authKey,pageSize,firstResults);
+
 		Results fullResults = new Results(firstResults.getColumns(),myiter,status);
 		return fullResults;
-	}
-
-	private class ResultsIteratorIterator implements Iterator<Map<String, String[]>> {
-			private int page = 0;
-			private Iterator<Map<String, String[]>> currentIter;
-			private boolean done = false;
-			private AuthKey authKey;
-			private JobId jobId;
-			private int pageSize;
-
-			public ResultsIteratorIterator(JobId jobId, AuthKey authKey, int pageSize,
-					Results firstResults) {
-				super();
-				this.currentIter = firstResults.getRows();
-				this.authKey = authKey;
-				this.jobId = jobId;
-				this.pageSize = pageSize;
-			}
-
-			@Override
-			public void remove() {
-				//ignore
-			}
-			
-			@Override
-			public Map<String, String[]> next() {
-				if( hasNext() ) {
-					return currentIter.next();
-				}
-				return null;
-			}
-			
-			@Override
-			public boolean hasNext() {
-				if( done ) {
-					return false;
-				}
-
-				if( currentIter.hasNext() ) {
-					return true;
-				} else {
-					page++;
-					try {
-						currentIter = retrieveRows(jobId,authKey,pageSize,page*pageSize).getRows();
-						if( !currentIter.hasNext() ) {
-							done = true;
-						}
-						return currentIter.hasNext();
-					} catch (IOException e) {
-						logger.error(e);
-						done = true;
-						return false;
-					}
-				}
-			}
 	}
 }
