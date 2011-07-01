@@ -39,6 +39,7 @@ public class Main {
 			return;
 		}
 
+		//output a csv.
 		String[] columns = res.getColumns();
 		CSVWriter csv = new CSVWriter(new OutputStreamWriter(System.out));
 		csv.writeNext(columns);
