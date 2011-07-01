@@ -1,7 +1,7 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.splunk.splunkquery</groupId>
-	<artifactId>splunkquery</artifactId>
+	<groupId>com.splunk.search</groupId>
+	<artifactId>splunksearch</artifactId>
 	<version>0.1</version>
 
 	<dependencies>
@@ -42,7 +42,74 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+		</dependency>
+
+  <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>jstl</artifactId>
+        <version>1.1.1</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>taglibs</groupId>
+        <artifactId>standard</artifactId>
+        <scope>runtime</scope>
+        <version>1.1.1</version>
+    </dependency>
+    <dependency>
+        <groupId>taglibs</groupId>
+        <artifactId>c</artifactId>
+        <version>1.1.1</version>
+        <scope>runtime</scope>
+        <type>tld</type>
+    </dependency>
+    <dependency>
+        <groupId>taglibs</groupId>
+        <artifactId>fmt</artifactId>
+        <version>1.1.1</version>
+        <scope>runtime</scope>
+        <type>tld</type>
+    </dependency>
+
 	</dependencies>
+
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.1</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<configuration>
+				<webResources>
+					<resource>
+						<directory>${basedir}/src/main/java</directory>
+						<targetPath>WEB-INF/classes</targetPath>
+						<includes>
+							<include>**/*.properties</include>
+							<include>**/*.xml</include>
+							<include>**/*.css</include>
+							<include>**/*.html</include>
+						</includes>
+					</resource>
+				</webResources>
+			</configuration>
+		</plugin>
+
+    </plugins>
+    </build>
 
 </project>
 
