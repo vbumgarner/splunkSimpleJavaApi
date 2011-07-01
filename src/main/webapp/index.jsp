@@ -28,7 +28,18 @@
 <h2>Basic search example</h2>
 
 <form>
-  <input name="q" label="Search" value="${param.q}" size="100" />
+  <label for="server">Server</label>
+  <input name="server" value="${not empty param.server ? param.server : 'https://localhost:8089'}" />
+  <br />
+  <label for="user">Username</label>
+  <input name="user" value="${not empty param.user ? param.user : 'admin'}" />
+  <br />
+  <label for="password">Password</label>
+  <input type="password" name="password" value="${not empty param.password ? param.password : 'changeme'}" />
+  <br />
+  <label for="q">Search</label>
+  <input name="q" value="${not empty param.q ? param.q : '* | head 10'}" size="100" />
+  <br />
   <input type="submit" value="Search" />
 </form>
 
@@ -37,9 +48,9 @@
 <c:if test='${not empty param.q}'>
 
 <jsp:useBean id="search1" scope="request" class="com.splunk.search.jsp.SearchBean"> 
-  <jsp:setProperty name="search1" property="server" value="https://minime.local.:8089" />
-  <jsp:setProperty name="search1" property="user" value="admin" />
-  <jsp:setProperty name="search1" property="password" value="wanker" />
+  <jsp:setProperty name="search1" property="server" value="${param.server}" />
+  <jsp:setProperty name="search1" property="user" value="${param.user}" />
+  <jsp:setProperty name="search1" property="password" value="${param.password}" />
   <jsp:setProperty name="search1" property="search" value="${param.q}" />
 </jsp:useBean>
 
@@ -47,7 +58,7 @@
 
 <p>${res1.status.resultCount} rows generated from ${res1.status.eventCount} events after scanning ${res1.status.scanCount} events in ${res1.status.runDuration} seconds.</p>
 
-<c:if test='${res1.status.eventCount gt 0}'>
+<c:if test='${res1.status.resultCount gt 0}'>
     <table border="1" class="hor-minimalist-b">
       <thead>
         <tr>
