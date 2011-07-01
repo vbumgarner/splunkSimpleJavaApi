@@ -29,47 +29,37 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.splunk.search.AuthKey;
 
 public abstract class RestBase {
-	private static Map<URL, HttpClient> clientMap;
 
 	public static HttpClient getClient(URL server)
 			throws KeyManagementException, UnrecoverableKeyException,
 			NoSuchAlgorithmException, KeyStoreException {
-		if (clientMap == null) {
-			clientMap = new HashMap<URL, HttpClient>();
-		}
+		HttpClient newClient = new DefaultHttpClient();
 
-		if (!clientMap.containsKey(server)) {
-			HttpClient newClient = new DefaultHttpClient(new ThreadSafeClientConnManager());
+		SchemeSocketFactory socketFactory = new SSLSocketFactory(
+				SelfSignedUtils.NAIVE_TRUST_STRATEGY,
+				SelfSignedUtils.NAIVE_HOSTNAME_VERIFIER);
+		Scheme sch = new Scheme("https", server.getPort(), socketFactory);
+		newClient.getConnectionManager().getSchemeRegistry().register(sch);
 
-			// if( trustSelfSigned() ) {
-
-			SchemeSocketFactory socketFactory = new SSLSocketFactory(SelfSignedUtils.NAIVE_TRUST_STRATEGY,SelfSignedUtils.NAIVE_HOSTNAME_VERIFIER);
-			Scheme sch = new Scheme("https", server.getPort(), socketFactory);
-			newClient.getConnectionManager().getSchemeRegistry().register(sch);
-
-			clientMap.put(server, newClient);
-		}
-
-		// }
-
-		return clientMap.get(server);
+		return newClient;
 	}
 
 	protected static InputStream doGet(URL server, String path,
 			Map<String, String> headers) throws URISyntaxException,
-			ClientProtocolException, IOException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+			ClientProtocolException, IOException, KeyManagementException,
+			UnrecoverableKeyException, NoSuchAlgorithmException,
+			KeyStoreException {
 		HttpGet httpget = new HttpGet(buildURI(server, path));
 		addHeaders(headers, httpget);
 
 		HttpResponse response = execute(getClient(server), httpget);
-		if( response.getEntity().getContentLength() == 0 ) {
+		if (response.getEntity().getContentLength() == 0) {
 			return new ByteArrayInputStream("<empty/>".getBytes());
 		}
 		return getInputStream(response);
@@ -77,7 +67,9 @@ public abstract class RestBase {
 
 	protected static InputStream doPost(URL server, String path,
 			Map<String, String> headers, Map<String, String> postArgs)
-			throws ClientProtocolException, IOException, URISyntaxException, KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+			throws ClientProtocolException, IOException, URISyntaxException,
+			KeyManagementException, UnrecoverableKeyException,
+			NoSuchAlgorithmException, KeyStoreException {
 
 		List<NameValuePair> formparams = new ArrayList<NameValuePair>();
 		for (String k : postArgs.keySet()) {
@@ -126,45 +118,4 @@ public abstract class RestBase {
 		headers.put("Authorization", "Splunk " + authKey);
 		return headers;
 	}
-
-	// protected void foo() {
-	// TrustManager easyTrustManager = new X509TrustManager() {
-	//
-	// @Override
-	// public void checkClientTrusted(
-	// X509Certificate[] chain,
-	// String authType) throws CertificateException {
-	// // Oh, I am easy!
-	// }
-	//
-	// @Override
-	// public void checkServerTrusted(
-	// X509Certificate[] chain,
-	// String authType) throws CertificateException {
-	// // Oh, I am easy!
-	// }
-	//
-	// @Override
-	// public X509Certificate[] getAcceptedIssuers() {
-	// return null;
-	// }
-	//
-	// };
-	//
-	// SSLContext sslcontext = SSLContext.getInstance("TLS");
-	// sslcontext.init(null, new TrustManager[] { easyTrustManager }, null);
-	//
-	// SSLSocketFactory sf = new SSLSocketFactory(sslcontext);
-	// SSLSocket socket = (SSLSocket) sf.createSocket();
-	// socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5"
-	// });
-	//
-	// HttpParams params = new BasicHttpParams();
-	// params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000L);
-	// InetSocketAddress address = new InetSocketAddress("locahost", 443);
-	// sf.connectSocket(socket, address, null, params);
-	//
-	// }
-
-	// public abstract boolean trustSelfSigned();
 }
