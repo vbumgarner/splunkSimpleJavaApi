@@ -54,8 +54,8 @@ public class Search extends RestBase {
 		Status status = getStatus(jobId, authKey);
 		while (status.isDone() == false) {
 			logger.info("Waiting for jobId " + jobId + " to finish. "
-					+ Math.round(status.doneProgress().floatValue() * 100)
-					+ " percent complete. " + status.resultCount()
+					+ Math.round(status.getDoneProgress().floatValue() * 100)
+					+ " percent complete. " + status.getResultCount()
 					+ " results retrieved so far.");
 			try {
 				Thread.sleep(1000);

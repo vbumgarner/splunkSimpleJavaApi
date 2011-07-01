@@ -32,7 +32,7 @@ public class Main {
 
 		Results res = Search.run(server, user, password, search);
 
-		Integer resultCount = res.getStatus().resultCount();
+		Integer resultCount = res.getStatus().getResultCount();
 		System.out.println(resultCount.toString() + " events found.");
 
 		if (resultCount.intValue() == 0) {

@@ -15,90 +15,90 @@ public class Status {
 	}
 
 	// the integers
-	public Integer diskUsage() {
+	public Integer getDiskUsage() {
 		return integerValue(buildKeyPath("diskUsage"));
 	}
 
-	public Integer dropCount() {
+	public Integer getDropCount() {
 		return integerValue(buildKeyPath("dropCount"));
 	}
 
-	public Integer eventAvailableCount() {
+	public Integer getEventAvailableCount() {
 		return integerValue(buildKeyPath("eventAvailableCount"));
 	}
 
-	public Integer eventCount() {
+	public Integer getEventCount() {
 		return integerValue(buildKeyPath("eventCount"));
 	}
 
-	public Integer eventIsStreaming() {
+	public Integer getEventIsStreaming() {
 		return integerValue(buildKeyPath("eventIsStreaming"));
 	}
 
-	public Integer eventIsTruncated() {
+	public Integer getEventIsTruncated() {
 		return integerValue(buildKeyPath("eventIsTruncated"));
 	}
 
-	public Integer priority() {
+	public Integer getPriority() {
 		return integerValue(buildKeyPath("priority"));
 	}
 
-	public Integer resultCount() {
+	public Integer getResultCount() {
 		return integerValue(buildKeyPath("resultCount"));
 	}
 
-	public Integer resultIsStreaming() {
+	public Integer getResultIsStreaming() {
 		return integerValue(buildKeyPath("resultIsStreaming"));
 	}
 
-	public Integer resultPreviewCount() {
+	public Integer getResultPreviewCount() {
 		return integerValue(buildKeyPath("resultPreviewCount"));
 	}
 
-	public Integer scanCount() {
+	public Integer getScanCount() {
 		return integerValue(buildKeyPath("scanCount"));
 	}
 
-	public Integer statusBuckets() {
+	public Integer getStatusBuckets() {
 		return integerValue(buildKeyPath("statusBuckets"));
 	}
 
-	public Integer ttl() {
+	public Integer getTtl() {
 		return integerValue(buildKeyPath("ttl"));
 	}
 
 	// the floats
-	public Float doneProgress() {
+	public Float getDoneProgress() {
 		return floatValue(buildKeyPath("doneProgress"));
 	}
 
-	public Float runDuration() {
+	public Float getRunDuration() {
 		return floatValue(buildKeyPath("runDuration"));
 	}
 
 	// the strings
-	public String sid() {
+	public String getSid() {
 		return stringValue(buildKeyPath("sid"));
 	}
 
-	public String dispatchState() {
+	public String getDispatchState() {
 		return stringValue(buildKeyPath("dispatchState"));
 	}
 
-	public String eventSearch() {
+	public String getEventSearch() {
 		return stringValue(buildKeyPath("eventSearch"));
 	}
 
-	public String eventSorting() {
+	public String getEventSorting() {
 		return stringValue(buildKeyPath("eventSorting"));
 	}
 
 	// dates, which we'll just return as strings for now
-	public String latestTime() {
+	public String getLatestTime() {
 		return stringValue(buildKeyPath("latestTime"));
 	}
 
-	public String earliestTime() {
+	public String getEarliestTime() {
 		return stringValue(buildKeyPath("earliestTime"));
 	}
 
