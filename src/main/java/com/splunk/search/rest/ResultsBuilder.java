@@ -14,7 +14,8 @@ import com.splunk.search.Status;
 
 public class ResultsBuilder {
 
-	public static Results build(InputStream results, Status status) throws XMLStreamException {
+	public static Results build(InputStream results, Status status)
+			throws XMLStreamException {
 		XMLStreamReader reader = XMLUtils.buildXmlReader(results);
 		String[] columns = buildColumns(reader);
 		List<Map<String, String[]>> rows = buildRows(reader);
@@ -27,10 +28,11 @@ public class ResultsBuilder {
 		List<String> columns = new ArrayList<String>();
 		while (reader.hasNext()) {
 			reader.next();
-			if (reader.isStartElement() && XMLUtils.testNodeName(reader,"field")) {
+			if (reader.isStartElement()
+					&& XMLUtils.testNodeName(reader, "field")) {
 				columns.add(reader.getElementText());
 			}
-			if (reader.isEndElement() && XMLUtils.testNodeName(reader,"meta")) {
+			if (reader.isEndElement() && XMLUtils.testNodeName(reader, "meta")) {
 				break;
 			}
 		}
@@ -45,29 +47,41 @@ public class ResultsBuilder {
 		List<String> currentValues = new ArrayList<String>();
 		Map<String, String[]> row = new HashMap<String, String[]>();
 
+		boolean readingValue = false;
+		StringBuffer valueBuffer = new StringBuffer();
+
 		while (reader.hasNext()) {
 			reader.next();
 
-			if (reader.hasName()) {
-				if (reader.isStartElement() && XMLUtils.testNodeName(reader,"result")) {
-					row = new HashMap<String, String[]>();
+			if (reader.isStartElement()
+					&& XMLUtils.testNodeName(reader, "result")) {
+				row = new HashMap<String, String[]>();
 
-				} else if (reader.isStartElement() && XMLUtils.testNodeName(reader,"field")) {
-					currentFieldname = reader.getAttributeValue(
-							reader.getNamespaceURI(), "k");
+			} else if (reader.isStartElement()
+					&& XMLUtils.testNodeName(reader, "field")) {
+				currentFieldname = reader.getAttributeValue(
+						reader.getNamespaceURI(), "k");
 
-				} else if (reader.isStartElement()
-						&& (XMLUtils.testNodeName(reader,"text") || XMLUtils.testNodeName(reader,"v"))) {
-					currentValues.add(reader.getElementText());
-
-				} else if (reader.isEndElement() && XMLUtils.testNodeName(reader,"field")) {
-					row.put(currentFieldname, currentValues
-							.toArray(new String[currentValues.size()]));
-					currentValues = new ArrayList<String>();
-				} else if (reader.isEndElement() && XMLUtils.testNodeName(reader,"result")) {
-					rows.add(row);
-
-				}
+			} else if (reader.isStartElement()
+					&& (XMLUtils.testNodeName(reader, "text") || XMLUtils
+							.testNodeName(reader, "v"))) {
+				readingValue = true;
+			} else if (reader.isEndElement()
+					&& (XMLUtils.testNodeName(reader, "text") || XMLUtils
+							.testNodeName(reader, "v"))) {
+				readingValue = false;
+				currentValues.add(valueBuffer.toString());
+				valueBuffer = new StringBuffer();
+			} else if (reader.isEndElement()
+					&& XMLUtils.testNodeName(reader, "field")) {
+				row.put(currentFieldname,
+						currentValues.toArray(new String[currentValues.size()]));
+				currentValues = new ArrayList<String>();
+			} else if (reader.isEndElement()
+					&& XMLUtils.testNodeName(reader, "result")) {
+				rows.add(row);
+			} else if (readingValue && reader.isCharacters()) {
+				valueBuffer.append(reader.getText());
 			}
 		}
 
