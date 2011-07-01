@@ -35,12 +35,12 @@
   <input name="user" value="${not empty param.user ? param.user : 'admin'}" />
   <br />
   <label for="password">Password</label>
-  <input type="password" name="password" value="${not empty param.password ? param.password : 'changeme'}" />
+  <input type="password" name="password" value="${not empty param.password ? fn:escapeXml(param.password) : 'changeme'}" />
   <br />
   <label for="q">Search</label>
-  <input name="q" value="${not empty param.q ? param.q : '* | head 10'}" size="100" />
+  <input name="q" value="${not empty param.q ? fn:escapeXml(param.q) : '* | head 10'}" size="100" />
   <br />
-  <input type="submit" value="Search" />
+  <input type="submit" value="Go!" />
 </form>
 
 <h3>Warning: This does exactly what you tell it. It will try to draw a million results if that's what the query returns. Use <code>| head</code> liberally.</h3>
