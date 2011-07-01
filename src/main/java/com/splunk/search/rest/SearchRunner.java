@@ -27,7 +27,9 @@ public class SearchRunner extends RestBase {
 	}
 
 	public JobId startSearch(String search, AuthKey authKey) throws IOException {
-		if (!search.startsWith("search")) {
+		if (search.startsWith("|")) {
+			search = search.substring(1);
+		} else if (!search.startsWith("search")) {
 			search = "search " + search;
 		}
 
@@ -39,15 +41,17 @@ public class SearchRunner extends RestBase {
 		try {
 			InputStream results = doPost(server, JOBS_PATH,
 					buildAuthHeaders(authKey), postArgs);
-			return new JobId( XMLUtils.getSingleValueOrMsg(results, "//sid/text()") );
+			return new JobId(XMLUtils.getSingleValueOrMsg(results,
+					"//sid/text()"));
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);
 		}
 	}
 
-	public Status getStatus(JobId jobId, AuthKey authKey, boolean needFresh) throws IOException {
-		if( status != null && !needFresh ) {
+	public Status getStatus(JobId jobId, AuthKey authKey, boolean needFresh)
+			throws IOException {
+		if (status != null && !needFresh) {
 			return status;
 		}
 
@@ -69,7 +73,8 @@ public class SearchRunner extends RestBase {
 			InputStream results = doGet(server, JOBS_PATH + "/" + jobId
 					+ "/results?count=" + Integer.toString(count) + "&offset="
 					+ Integer.toString(offset), buildAuthHeaders(authKey));
-			return ResultsBuilder.build(results,getStatus(jobId,authKey,false));
+			return ResultsBuilder.build(results,
+					getStatus(jobId, authKey, false));
 		} catch (Exception e) {
 			logger.error(e);
 			throw new IOException(e);
